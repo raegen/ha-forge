@@ -1,0 +1,51 @@
+configuration:
+  openai_api_key:
+    name: OpenAI API key
+    description: API key used directly by Forge for the OpenAI Responses API. Stored as an app password option.
+  model:
+    name: Model
+    description: Default model for new conversations. The workspace model picker discovers account models and saves a choice per task without changing this option.
+  reasoning_effort:
+    name: Reasoning effort
+    description: Default reasoning effort. The workspace offers levels supported by the selected model. Higher effort can take longer and cost more; it is not a permission setting.
+  text_verbosity:
+    name: Text verbosity
+    description: Verbosity of the final model response.
+  enable_web_search:
+    name: Web search
+    description: Give the model OpenAI's hosted web-search tool.
+  enable_code_interpreter:
+    name: Code interpreter
+    description: Give the model OpenAI's hosted Python/code-interpreter tool.
+  backup_on_write:
+    name: Back up files before writes
+    description: Save a timestamped copy in Forge persistent storage before replacing an existing file.
+  allow_sensitive_files:
+    name: Allow sensitive Home Assistant files
+    description: Permit access to secrets/auth/config-entry storage. Leave off unless explicitly needed.
+  allow_shell_commands:
+    name: Allow arbitrary shell commands
+    description: Expose an unrestricted shell tool to the model. Leave off unless explicitly needed.
+  max_read_kb:
+    name: Maximum file read size (KB)
+  max_write_kb:
+    name: Maximum file write size (KB)
+  attachment_storage_mb:
+    name: Attachment storage limit (MiB)
+    description: Local photo, PDF and text attachment quota, including previews. Default 256 MiB; range 32–4096. Sent attachments are retained with chat history, not automatically deleted. Lowering the limit blocks new uploads without deleting existing files.
+  openai_request_timeout_seconds:
+    name: OpenAI request timeout (seconds)
+    description: Applies to each model turn. Forge itself runs tasks outside the Home Assistant Assist pipeline timeout.
+  max_tool_rounds:
+    name: Maximum tool rounds per task
+    description: Safety ceiling for one development task; not a time limit.
+
+  max_tool_output_kb:
+    name: Maximum tool output returned to model (KB)
+    description: Bounds individual local tool results to keep long development sessions from exploding model context.
+  openai_rate_limit_max_wait_seconds:
+    name: Rate-limit retry budget (seconds)
+    description: Forge automatically waits and retries recoverable OpenAI 429 TPM/RPM limits for up to this total time per model request.
+  context_compact_threshold_tokens:
+    name: Automatic context compaction threshold (tokens)
+    description: Request automatic context compaction at this size for supported models. Other models omit this setting. Default 100000; changing models does not delete stored history.

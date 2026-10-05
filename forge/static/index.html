@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark light"><meta name="theme-color" content="#171a1f"><title>Forge · Home Assistant development</title>
+<link rel="icon" href="./forge.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./attachments.css"><script src="./attachments.js" defer></script><script src="./permissions.js" defer></script><script src="./models.js" defer></script><link rel="stylesheet" href="./connections.css"><script src="./connections.js" defer></script><script src="./app.js" defer></script></head>
+<body>
+<a class="skip" href="#composer">Skip to message</a>
+<div id="scrim" hidden></div>
+<aside id="sidebar" aria-label="Conversations">
+  <div class="brand"><img class="brand-mark" src="./forge.svg" width="38" height="38" alt=""><div><strong>Forge</strong><span>DEVELOPMENT WORKSPACE</span></div><button id="close-nav" class="icon mobile" aria-label="Close conversations">×</button></div>
+  <button id="new-chat" class="primary wide"><span aria-hidden="true">＋</span> New conversation</button>
+  <label class="search"><span class="sr-only">Search conversations</span><input id="search" type="search" placeholder="Search conversations…" autocomplete="off"></label>
+  <div class="nav-label"><span id="chat-label">CONVERSATIONS</span><button id="archive-filter" class="text-button" aria-pressed="false">Archived</button></div>
+  <nav id="chat-list" aria-label="Conversation list"></nav>
+  <div class="sidebar-footer"><button id="open-connections" class="subtle" type="button" aria-haspopup="dialog">Connections <span aria-hidden="true">↗</span></button><div id="connection" class="connection"><i aria-hidden="true"></i><span>Connecting…</span></div>
+  <div class="footer-row"><span id="version">Forge</span><button id="theme" class="text-button" aria-label="Change color theme">Theme: system</button></div></div>
+</aside>
+<main>
+  <header class="topbar">
+    <button id="open-nav" class="icon mobile" aria-label="Open conversations" aria-expanded="false" aria-controls="sidebar">☰</button>
+    <div class="heading"><span class="eyebrow">HOME ASSISTANT · WORKSHOP</span><h1 id="chat-title">Your appliance, under control.</h1></div>
+    <div class="top-actions">
+      <button id="model-controls" class="subtle" aria-haspopup="dialog">Model &amp; effort</button>
+      <button id="activity-toggle" class="subtle" aria-expanded="false" aria-controls="activity"><span class="activity-dot" aria-hidden="true"></span> Activity</button>
+      <details id="chat-menu"><summary class="icon" aria-label="Conversation actions">⋯</summary><div class="menu">
+        <button id="rename">Rename</button><button id="export">Export chat</button><button id="archive">Archive chat</button>
+      </div></details>
+    </div>
+  </header>
+  <div id="banner" class="banner" role="status" hidden><span id="banner-text"></span><button id="reconnect" class="text-button">Reconnect</button></div>
+  <div class="workspace">
+    <section class="conversation" aria-label="Chat">
+      <div id="timeline" tabindex="0" aria-label="Messages">
+        <button id="older" class="subtle" hidden>Load earlier messages</button><div id="messages"></div>
+        <section id="welcome" class="welcome"><span class="welcome-label">BUILT FOR YOUR APPLIANCE</span>
+          <h2>Inspect. Improve.<br><span>Keep it working.</span></h2>
+          <p>A development workspace for your Home Assistant appliance. Inspect live systems, build carefully, and pick up where you left off.</p>
+          <div class="suggestions">
+            <button data-prompt="Inspect the appliance health and report any issues. Do not make changes."><strong>Check appliance health</strong><span>Inspect services, network and audio</span></button>
+            <button data-prompt="Review the app source and identify reliability risks. Propose the smallest safe improvements before changing anything."><strong>Review an app</strong><span>Find the cause before changing code</span></button>
+          </div>
+          <div class="welcome-note">Read-only by default. You decide when changes are allowed.</div>
+        </section>
+      </div>
+      <button id="jump" class="jump subtle" hidden>New messages ↓</button>
+      <div id="task-strip" class="task-strip" hidden>
+        <div class="task-main"><span id="task-state" class="badge"></span><span id="task-phase"></span><time id="elapsed"></time></div>
+        <p id="task-model" class="muted"></p><p id="task-error" hidden></p>
+        <div class="task-actions"><button id="cancel" class="danger" hidden>Stop task</button><button id="resume" class="subtle" hidden>Resume safely</button><button id="details-button" class="text-button">View activity</button></div>
+      </div>
+      <section id="pending-submission" class="task-strip" aria-label="Submission recovery" hidden>
+        <strong>Previous submission needs checking</strong><p id="pending-state" role="status"></p>
+        <div class="task-actions"><button id="check-pending" class="subtle" type="button">Check status</button><button id="retry-pending" class="subtle" type="button" disabled>Review &amp; retry original</button></div>
+      </section>
+      <form id="compose-form" class="composer">
+        <div class="file-toolbar"><button id="attach-files" class="subtle" type="button" disabled>＋ Attach files</button><span id="file-summary">Photos, PDF, text &amp; logs</span><button id="refresh-files" class="text-button" type="button" title="Reload saved attachments without sending a message">Refresh files</button></div>
+        <input id="file-picker" type="file" multiple hidden accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,.txt,.log,.md,.csv,.json,.yaml,.yml,.xml,.ini,.conf,.cfg,.toml,.py,.js,.ts,.css,.html,.sh,.diff,.patch,.sql,.service" aria-label="Choose files to attach">
+        <div id="draft-files" aria-label="Attached draft files" hidden></div>
+        <p id="file-progress" role="status" aria-live="polite" hidden></p><p id="file-error" role="alert" hidden></p>
+        <label class="sr-only" for="composer">Message Forge</label>
+        <textarea id="composer" rows="3" placeholder="What needs doing?" maxlength="64000"></textarea>
+        <div class="composer-bottom"><label class="permission" title="Remembered for this conversation until unchecked. Each prompt you send gets its own grant: 60 minutes maximum, ending on completion or restart. Applies to the next Send, not the running task. Stop &amp; send stops old future actions; an in-flight action may finish. Resume has separate permission."><input id="allow-changes" type="checkbox"><span>Allow changes <small>remembered for this chat · 60 min/task</small></span></label>
+          <button id="send" class="primary" type="submit">Send <span aria-hidden="true">↑</span></button></div>
+        <details class="file-policy"><summary>Upload limits &amp; privacy <span id="file-quota"></span></summary><p>Up to 4 files, 10 MiB each, 20 MiB per message. UTF-8 text/logs: 256 KiB each. Choose files, drop them here, or paste a screenshot. JPEG, PNG, WebP, still GIF and PDF; export HEIC photos as JPEG first.</p><p>Uploads stay private on this appliance until you press Send; sent contents go to your configured OpenAI API. Images are optimized to 3072 pixels and EXIF/location metadata is removed. Originals on your device are unchanged. Do not attach passwords or other secrets. Uploads never authorize appliance changes.</p><p>Drafts survive refresh/restart. Remove unused drafts with ×. Sent files are retained with chat history, without automatic deletion. The storage cap is configurable in app options; exports contain attachment metadata, not the file bytes.</p></details>
+        <div class="composer-note"><span id="composer-hint">Enter to send · Shift+Enter for a new line</span><button id="model-label" class="text-button" type="button" aria-haspopup="dialog">Connecting…</button></div>
+      </form>
+    </section>
+    <aside id="activity" aria-label="Task activity" hidden>
+      <div class="activity-header"><div><span class="eyebrow">EXECUTION LOG</span><h2>Activity</h2></div><button id="close-activity" class="icon" aria-label="Close activity">×</button></div>
+      <div id="capabilities" class="capabilities"></div><p class="activity-help">Completed tool results are saved. Stopping a task does not undo a change already in progress.</p>
+      <div id="event-list" role="log" aria-label="Task events"><p class="muted">Tool calls and progress will appear here.</p></div>
+      <button id="more-events" class="subtle" hidden>Load more activity</button>
+    </aside>
+  </div>
+</main>
+<dialog id="model-dialog" aria-labelledby="model-dialog-title">
+  <form method="dialog">
+    <div class="dialog-heading"><div><span class="eyebrow">NEXT TASK</span><h2 id="model-dialog-title">Model &amp; effort</h2></div><button class="icon" value="close" aria-label="Close model settings">×</button></div>
+    <p id="model-scope"></p>
+    <label for="model-select">OpenAI model</label><select id="model-select" aria-describedby="model-availability"></select>
+    <p id="model-availability" class="field-help"></p>
+    <label for="effort-select">Reasoning effort</label><select id="effort-select" aria-describedby="effort-help"></select>
+    <p id="effort-help" class="field-help">Higher effort can improve difficult work, but takes longer and can cost more. Only this model’s supported levels are offered.</p>
+    <p id="model-tools" class="field-help"></p>
+    <div class="catalog-status"><span id="model-state" role="status" aria-live="polite"></span><button id="refresh-models" class="subtle" type="button">Refresh from OpenAI</button></div>
+    <details class="model-explainer"><summary>Where these choices come from</summary><p>Model IDs come from your configured OpenAI account. The models endpoint does not report reasoning levels or tool support, so Forge uses a reviewed compatibility table. Specialized and unverified models are excluded. Refreshing this list never starts a task or a generation request.</p><p>Draft choices stay in this browser; the last sent choice is saved with the conversation. A new chat starts with the app default. API keys remain on the server.</p></details>
+    <div class="dialog-actions"><button value="done" class="primary">Done</button></div>
+  </form>
+</dialog>
+<dialog id="connections-dialog" aria-labelledby="connections-title">
+  <div class="dialog-heading"><div><span class="eyebrow">WORKSPACE SETTINGS</span><h2 id="connections-title">Git connections</h2></div><button id="close-connections" class="icon" type="button" aria-label="Close connections">×</button></div>
+  <p class="connections-intro">One persistent SSH key for your Git account. Register it once, then ask Forge to develop, commit and push your projects. You choose the destination and authorize each task; connecting is not permission to publish on its own.</p>
+  <div class="ssh-toolbar"><button id="new-connection" class="primary" type="button">Add SSH key</button><button id="refresh-connections" class="subtle" type="button">Refresh saved connections</button></div>
+  <p id="ssh-message" role="status" aria-live="polite">Loading saved connections…</p>
+  <section id="ssh-pending" hidden aria-label="Connection creation recovery"><strong>Check the previous key creation</strong><p>The original request is saved. Refresh checks the result without generating or replacing a key. Nothing is retried automatically.</p><div class="ssh-actions"><button id="ssh-check-pending" class="subtle" type="button">Check saved result</button><button id="ssh-retry-pending" class="subtle" type="button">Review &amp; retry original</button></div></section>
+  <section id="ssh-create-section" hidden><h3>New SSH connection</h3>
+    <form id="ssh-create-form"><fieldset id="ssh-create-fields">
+      <label class="ssh-full" for="ssh-name">Connection name<input id="ssh-name" required maxlength="80" placeholder="My GitHub account" autocomplete="off"></label>
+      <label for="ssh-host">SSH host<input id="ssh-host" required maxlength="253" value="github.com" spellcheck="false" autocapitalize="off" autocomplete="off"></label>
+      <label for="ssh-port">Port<input id="ssh-port" type="number" min="1" max="65535" required value="22" inputmode="numeric"></label>
+      <label for="ssh-username">SSH user<input id="ssh-username" required maxlength="64" value="git" spellcheck="false" autocapitalize="off" autocomplete="off"></label>
+      <label for="ssh-scope">Key scope<select id="ssh-scope"><option value="account">Git account — reuse across repositories</option><option value="repository">One repository — deploy key</option></select></label>
+      <label class="ssh-full" id="ssh-repository-field" for="ssh-repository" hidden>Repository path<input id="ssh-repository" maxlength="240" placeholder="owner/project.git" spellcheck="false" autocapitalize="off" autocomplete="off"></label>
+      <label class="ssh-full" for="ssh-create-access">Allowed Git operations<select id="ssh-create-access"><option value="write">Read &amp; write — development and publication</option><option value="read">Read only — inspect and clone</option></select></label>
+    </fieldset><p id="ssh-scope-help" class="field-help">Account scope uses one key for repositories your Git account can access. Register it in your account’s SSH key settings, not as a per-repository deploy key.</p><p class="field-help">Generate key stores an unencrypted Ed25519 key in private, persistent app data. No remote host is contacted. Only the public key is shown. Host, account/repository scope and identity are fixed after creation; allowed operations can be changed explicitly below.</p>
+    <div class="ssh-actions"><button id="ssh-create" class="primary" type="submit">Generate key &amp; save</button><button id="cancel-connection" class="subtle" type="button">Close form</button></div></form>
+  </section>
+  <div class="ssh-columns"><nav id="ssh-list" aria-label="Saved SSH connections"></nav><section id="ssh-detail" hidden aria-labelledby="ssh-detail-name">
+    <h3 id="ssh-detail-name"></h3><p id="ssh-detail-remote" class="muted"></p><p id="ssh-incomplete" class="field-help" hidden>This interrupted connection is retained, never automatically repaired or replaced. Create a replacement connection explicitly. Do not register an incomplete key.</p>
+    <section class="ssh-step"><h4>1 · Register the public key</h4><label for="ssh-public-key">Public key — safe to copy to your Git provider</label><textarea id="ssh-public-key" rows="3" readonly spellcheck="false"></textarea><p id="ssh-key-fingerprint"></p><button id="ssh-copy-key" class="subtle" type="button">Copy public key</button><p id="ssh-register-help" class="field-help"></p></section>
+    <section class="ssh-step"><h4>2 · Verify the server</h4><p id="ssh-trust-state"></p><button id="ssh-scan" class="subtle" type="button">Scan host fingerprint</button>
+      <div id="ssh-host-review" hidden><p class="field-help">A scan is <strong>not proof of identity</strong>. Obtain the expected Ed25519 SHA256 fingerprint from the host administrator or official documentation, using a trusted channel.</p><p class="field-help"><a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints" target="_blank" rel="noopener noreferrer">GitHub’s official host fingerprints ↗</a></p>
+      <label for="ssh-host-candidate">Scanned host key (untrusted)</label><select id="ssh-host-candidate"></select><label for="ssh-expected-fingerprint">Independently verified fingerprint</label><input id="ssh-expected-fingerprint" placeholder="SHA256:…" autocomplete="off" spellcheck="false" autocapitalize="off"><div class="ssh-actions"><button id="ssh-pin" class="primary" type="button" disabled>Verify &amp; pin host key</button></div></div>
+    </section>
+    <section class="ssh-step"><h4>3 · Check access</h4><label id="ssh-test-repository-field" for="ssh-test-repository" hidden>Repository to test<input id="ssh-test-repository" maxlength="240" placeholder="owner/project.git" spellcheck="false" autocapitalize="off" autocomplete="off"></label><p class="field-help">Tests authentication by reading that repository’s branches and tags. It does not clone, push or prove write permission at the provider.</p><div class="ssh-actions"><button id="ssh-test" class="primary" type="button">Test read access</button><button id="ssh-enable" class="subtle" type="button">Disable connection</button></div></section>
+    <section class="ssh-step"><h4>Development permissions</h4><label for="ssh-access">Allowed Git operations</label><div class="ssh-access-row"><select id="ssh-access"><option value="read">Read only</option><option value="write">Read &amp; write — allow push</option></select><button id="ssh-save-access" class="subtle" type="button">Save permissions</button></div><p class="field-help">Only you can change this setting. Push also needs provider-side write access, your publication request, and an active Allow changes task. Existing read-only connections stay read-only until you change them.</p></section>
+  </section></div>
+  <details class="ssh-notes"><summary>Persistence, backups &amp; access boundaries</summary><p>Keys live in the app’s private <code>/data/ssh</code>, not the container image. Normal updates of this same installation are designed to retain them. Backups contain credentials: protect and encrypt backups. A separately installed repository app has a different identity and does not automatically inherit keys or history.</p><p>Forge can initialize projects under <code>addons/</code> or <code>share/</code>, review diffs, stage selected files, commit, switch branches, fetch, fast-forward and push a single reviewed branch. It can also shallow-clone into a new <code>share/forge_git/</code> directory. No force push, destructive reset, automatic merge, remote shell, private-key export or OAuth. No repository code runs automatically.</p><p>Account scope is intentionally broad: the Git provider decides which repositories the account key can access. Choose a per-repository key for narrower provider-side access. Forge’s read-only switch limits its Git tools; it does not reduce a key’s provider permissions or constrain unrestricted shell access.</p><p>Disabling prevents future use but keeps the key and cannot retract in-flight work. Remove its public key at the provider to revoke remote access. To rotate, explicitly create and test a replacement, then disable and revoke the old connection. Nothing is automatically deleted or rotated.</p><p>Administrator or unrestricted shell access to this container can read its files, including private keys. This is not a separate credential vault. Keep shell disabled unless you accept that trust boundary.</p></details>
+</dialog>
+<dialog id="rename-dialog"><form method="dialog"><h2>Rename conversation</h2><label for="new-title">Conversation title</label><input id="new-title" maxlength="120" required><div class="dialog-actions"><button value="cancel" class="subtle" formnovalidate>Cancel</button><button value="save" class="primary">Save</button></div></form></dialog>
+<dialog id="resume-dialog"><form method="dialog"><h2>Resume from saved work?</h2><p>Completed tool calls will not be repeated. Any change interrupted mid-action is marked uncertain and must be inspected first.</p><p>If a provider submission lost its connection before returning an ID, explicit Resume may submit it again and incur additional provider cost.</p><label class="permission"><input id="resume-changes" type="checkbox"><span>Allow changes for this resumed task <small>Expires in 60 minutes or when the task stops.</small></span></label><div class="dialog-actions"><button value="cancel" class="subtle">Not now</button><button value="resume" class="primary">Resume</button></div></form></dialog>
+<dialog id="file-preview-dialog" aria-labelledby="file-preview-title"><div class="file-preview-head"><h2 id="file-preview-title">Image preview</h2><button id="close-file-preview" class="icon" type="button" aria-label="Close image preview">×</button></div><img id="file-preview-image" alt=""><p id="file-preview-note"></p><a id="file-preview-download" class="subtle" download>Download optimized image</a></dialog>
+<dialog id="pending-dialog" aria-labelledby="pending-title"><form method="dialog"><h2 id="pending-title">Retry the original submission?</h2>
+<p>This retries the saved original, not your edited draft, using the same request ID, files, model, effort, permission and Stop &amp; send target.</p>
+<p id="pending-review-info"></p><pre id="pending-review-text" class="pending-review-text"></pre>
+<p>If already accepted, the original task and permission deadline are kept. Otherwise, this can start the original work. Your edited draft stays saved. Nothing is sent until you confirm.</p>
+<div class="dialog-actions"><button value="cancel" class="subtle">Not now</button><button value="retry" class="primary">Retry original</button></div></form></dialog>
+<div id="toast" role="status" hidden></div>
+</body></html>

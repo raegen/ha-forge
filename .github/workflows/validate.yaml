@@ -1,0 +1,31 @@
+name: Validate Forge
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Create isolated test environment
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install Pillow PyYAML
+          command -v git ssh ssh-keygen ssh-keyscan
+      - name: Validate repository metadata and release hygiene
+        run: .venv/bin/python ci/check_package.py
+      - name: Compile and test backend
+        working-directory: forge
+        run: |
+          ../.venv/bin/python -m compileall -q forge.py forge_safety.py forge_store.py forge_provider.py forge_runtime.py forge_attachments.py forge_models.py forge_ssh.py forge_git.py
+          ../.venv/bin/python -m unittest discover -s tests -v
+      - name: Parse all browser scripts
+        run: |
+          for script in forge/static/*.js; do node --check "$script"; done
+          node forge/tests/test_connections.js
+# No credentials, publication, deployment or appliance access in this workflow.
+# Review dependency/base-image pinning and the attended checks in PUBLISHING.md
+# before the first public release. An aarch64 image build is a separate gate.

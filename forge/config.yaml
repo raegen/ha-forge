@@ -1,0 +1,79 @@
+name: "Forge"
+version: "0.6.0"
+slug: "forge"
+url: "https://github.com/raegen/ha-forge"
+description: "Home Assistant development workspace with live tools, durable tasks and explicit permissions"
+arch:
+  - aarch64
+startup: services
+boot: auto
+init: false
+ingress: true
+ingress_port: 8128
+ingress_stream: true
+watchdog: "http://[HOST]:[PORT:8128]/health"
+backup: cold
+breaking_versions:
+  - "0.2.0"
+panel_icon: mdi:anvil
+panel_title: "Forge"
+panel_admin: true
+hassio_api: true
+homeassistant_api: true
+hassio_role: manager
+stage: experimental
+map:
+  - type: homeassistant_config
+    read_only: false
+    path: /homeassistant
+  - type: addons
+    read_only: false
+    path: /addons
+  - type: all_addon_configs
+    read_only: false
+    path: /addon_configs
+  - type: share
+    read_only: false
+    path: /share
+  - type: media
+    read_only: false
+    path: /media
+  - type: backup
+    read_only: false
+    path: /backup
+options:
+  openai_api_key: ""
+  model: "gpt-6-astra"
+  reasoning_effort: "max"
+  text_verbosity: "medium"
+  enable_web_search: true
+  enable_code_interpreter: true
+  backup_on_write: true
+  allow_sensitive_files: false
+  allow_shell_commands: false
+  max_read_kb: 512
+  max_write_kb: 2048
+  attachment_storage_mb: 256
+  openai_request_timeout_seconds: 1800
+  max_tool_rounds: 64
+  max_tool_output_kb: 128
+  openai_rate_limit_max_wait_seconds: 300
+  context_compact_threshold_tokens: 100000
+schema:
+  openai_api_key: password
+  model: str
+  reasoning_effort: "list(none|minimal|low|medium|high|xhigh|max)"
+  text_verbosity: "list(low|medium|high)"
+  enable_web_search: bool
+  enable_code_interpreter: bool
+  backup_on_write: bool
+  allow_sensitive_files: bool
+  allow_shell_commands: bool
+  max_read_kb: "int(16,8192)"
+  max_write_kb: "int(16,16384)"
+  attachment_storage_mb: "int(32,4096)"
+  openai_request_timeout_seconds: "int(60,7200)"
+  max_tool_rounds: "int(4,128)"
+  max_tool_output_kb: "int(32,1024)"
+  openai_rate_limit_max_wait_seconds: "int(0,1800)"
+  context_compact_threshold_tokens: "int(1000,1000000)"
